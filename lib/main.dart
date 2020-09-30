@@ -2,6 +2,7 @@ import 'package:ExpenseApp/models/Transaction.dart';
 import 'package:ExpenseApp/widgets/ListTransaction.dart';
 import 'package:ExpenseApp/widgets/NewTransaction.dart';
 import 'package:ExpenseApp/widgets/NotFoundTransaction.dart';
+import 'package:ExpenseApp/widgets/SaldoStats.dart';
 import 'package:ExpenseApp/widgets/TopUpSaldo.dart';
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
@@ -16,9 +17,9 @@ class MyApp extends StatelessWidget {
       title: 'Flutter App',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
-          primarySwatch: Colors.green,
+          primarySwatch: Colors.purple,
           accentColor: Colors.amberAccent,
-          splashColor: Colors.green),
+          splashColor: Colors.purple),
       home: MyHomePage(),
     );
   }
@@ -32,18 +33,25 @@ class MyHomePage extends StatefulWidget {
 final scaffoldState = GlobalKey<ScaffoldState>();
 
 class _MyHomePageState extends State<MyHomePage> {
-  double saldo = 70;
+  double saldo = 100;
   bool showWalletInput = false;
 
-  final List<Transaction> _userTransactions = [
-    Transaction(ammount: 10, title: 'buy a tea', date: DateTime.now()),
-    Transaction(ammount: 30, title: 'buy a keyboard', date: DateTime.now())
-  ];
+  final List<Transaction> _userTransactions = [];
   // list getter _recent transaction
   List<Transaction> get _recentTransaction {
     return _userTransactions.where((tx) {
       return tx.date.isAfter(DateTime.now().subtract(Duration(days: 7)));
     }).toList();
+  }
+
+  double get totalOutcome {
+    return _userTransactions.fold(0.0, (previousValue, element) {
+      return previousValue + element.ammount;
+    });
+  }
+
+  double get totalSaldo {
+    return saldo - totalOutcome;
   }
 
   void _addNewTransaction(String txTitle, double txAmmount, DateTime txDate) {
@@ -143,43 +151,76 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       key: scaffoldState,
-      appBar: AppBar(
-        title: Text('Expenses Planner'),
-        actions: [
-          Row(
-            children: [
-              Text('$saldo K'),
-              IconButton(
-                  icon: Icon(Icons.add), onPressed: () => toggleWalletInput())
-            ],
-          )
-        ],
-      ),
+      // appBar: AppBar(
+      //   title: Text('Expenses Planner'),
+      //   actions: [
+      //     Row(
+      //       children: [
+      //         Text('$totalSaldo K'),
+      //         IconButton(
+      //             icon: Icon(Icons.add), onPressed: () => toggleWalletInput())
+      //       ],
+      //     )
+      //   ],
+      // ),
       body: Builder(builder: (context) {
-        return _userTransactions.isEmpty
-            ? NotFoundTransaction()
-            : SingleChildScrollView(
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.start,
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    if (showWalletInput)
-                      TopUpSaldo(
-                        topUpSaldoFn: topUpSaldo,
-                      ),
-                    ChartTransaction(
-                      recentTransaction: _recentTransaction,
-                    ),
-                    SizedBox(
-                      height: 4,
-                    ),
-                    ListTransaction(
-                      transactions: _userTransactions,
+        return SingleChildScrollView(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.start,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              SaldoStats(
+                recentSaldo: totalSaldo,
+                outcome: totalOutcome,
+                toggleWalletInputFn: toggleWalletInput,
+              ),
+              if (showWalletInput)
+                TopUpSaldo(
+                  topUpSaldoFn: topUpSaldo,
+                ),
+              Padding(
+                padding: const EdgeInsets.only(left: 20, top: 20),
+                child: Text(
+                  'Your Transaction',
+                  style: TextStyle(
+                      fontFamily: 'Poppins',
+                      fontWeight: FontWeight.bold,
+                      fontSize: 20),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.only(left: 20, top: 5),
+                child: Text('last 7 day'),
+              ),
+              ChartTransaction(
+                recentTransaction: _recentTransaction,
+              ),
+              Padding(
+                padding: const EdgeInsets.only(left: 20, top: 20),
+                child: Text(
+                  'History Transaction',
+                  style: TextStyle(
+                      fontFamily: 'Poppins',
+                      fontWeight: FontWeight.bold,
+                      fontSize: 20),
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.only(left: 20, top: 5),
+                child: Text(
+                  'all tx',
+                  style: TextStyle(color: Colors.black54),
+                ),
+              ),
+              _userTransactions.isNotEmpty
+                  ? ListTransaction(
+                      transactions: _userTransactions.reversed.toList(),
                       deleteTx: _startDeleteTransaction,
                     )
-                  ],
-                ),
-              );
+                  : NotFoundTransaction()
+            ],
+          ),
+        );
       }),
       floatingActionButton: FloatingActionButton(
         onPressed: () => _startNewTransactionModal(context),

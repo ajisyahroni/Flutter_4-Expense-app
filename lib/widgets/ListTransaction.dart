@@ -10,10 +10,21 @@ class ListTransaction extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      height: 450,
+      height: MediaQuery.of(context).size.height / 2,
       child: ListView.builder(
         itemBuilder: (ctx, index) {
-          return Card(
+          return Container(
+            margin: EdgeInsets.only(left: 15.0, right: 15.0, bottom: 10),
+            width: double.infinity,
+            decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(20),
+                color: Colors.white,
+                boxShadow: [
+                  BoxShadow(
+                      offset: Offset(0, 4),
+                      blurRadius: 30,
+                      color: Color(0xFFB7B7B7).withOpacity(.16))
+                ]),
             child: ListTile(
               leading: CircleAvatar(
                 radius: 30,

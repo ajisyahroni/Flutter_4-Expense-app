@@ -50,8 +50,18 @@ class _TopUpSaldoState extends State<TopUpSaldo> {
   Widget build(BuildContext context) {
     return Padding(
       padding: const EdgeInsets.only(top: 10),
-      child: Card(
-          elevation: 3,
+      child: Container(
+          margin: EdgeInsets.all(15.0),
+          width: double.infinity,
+          decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(20),
+              color: Colors.white,
+              boxShadow: [
+                BoxShadow(
+                    offset: Offset(0, 4),
+                    blurRadius: 30,
+                    color: Color(0xFFB7B7B7).withOpacity(.16))
+              ]),
           child: TextField(
             keyboardType: TextInputType.number,
             controller: saldoController,
